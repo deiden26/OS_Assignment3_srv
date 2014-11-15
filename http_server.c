@@ -92,7 +92,7 @@ int main(int argc,char *argv[])
         //handle_connection(&connfd);
 
         //Multi threaded
-        pool_add_task(threadpool, (void *) &handle_connection, (void *) connfd);
+        pool_add_task(threadpool, (void *) &handle_connection, (int *) &connfd);
 
     }
 }
