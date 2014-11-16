@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "seats.h"
 
@@ -149,7 +150,7 @@ void cancel(char* buf, int bufsize, int seat_id, int customer_id, int customer_p
 void load_seats(int number_of_seats)
 {
     //Initialize lock
-    pthread_mutex_init(&seatLock);
+    pthread_mutex_init(&seatLock, NULL);
 
     //Get the lock
     pthread_mutex_lock(&seatLock);
@@ -177,7 +178,7 @@ void load_seats(int number_of_seats)
     }
 
     //Release the lcok
-    pthread_mutex_unlock (&seatLock);
+    pthread_mutex_unlock(&seatLock);
 }
 
 void unload_seats()
@@ -195,6 +196,9 @@ void unload_seats()
 
     //Release the lock
     pthread_mutex_unlock(&seatLock);
+
+    //destroy the lock
+    pthread_mutex_destroy(&seatLock);
 }
 
 char seat_state_to_char(seat_state_t state)

@@ -50,8 +50,13 @@ pool_t *pool_create(int queue_size, int num_threads)
 
   assert(num_threads <= MAX_THREADS);
 
-  //Initialize threadpool variables with default values
+  //Create the lock
   pthread_mutex_init(&threadPool->lock,NULL);
+
+  //Lock the pool
+  pthread_mutex_lock(&(threadPool->lock));
+
+  //Initialize threadpool variables with default values
   pthread_cond_init(&threadPool->notify,NULL);
   threadPool->thread_count = 0;
   threadPool->task_count = 0;
@@ -67,6 +72,9 @@ pool_t *pool_create(int queue_size, int num_threads)
   {
     pthread_create(&threadPool->threads[i], NULL, thread_do_work, threadPool);
   }
+
+  //Unlock the pool
+  pthread_mutex_unlock(&(threadPool->lock));
 
   return threadPool;
 }
@@ -126,34 +134,45 @@ int pool_add_task(pool_t *pool, void (*function)(int *), void *argument)
  */
 int pool_destroy(pool_t *pool)
 {
-    // Initialize return value to 0 (no error)
-    int err = 0;
+  // Initialize return value to 0 (no error)
+  int err = 0;
 
-    //For each task...
-    pool_task_t *task = pool->queue;
-    pool_task_t *tasktoDel;
-    while(task != NULL)
-    {
-      //Save the location of the task
-      tasktoDel = task;
-      //Get the location of the next task
-      task = task->next;
-      //Free the task object's memory
-      free(task);
-    }
+  //Get the lock
+  pthread_mutex_lock(&(pool->lock));
 
-    // For each thread...
-    int i;
-    for (i=0; i < pool->thread_count; i++)
-    {
-      // Cancel the thread
-      err = pthread_cancel(pool->threads[i]);
-      // Return with the error number if there is an error
-      if (err != 0)
-        return err;
-    }
-    // Return 0 for no error
-    return err;
+  //For each task...
+  pool_task_t *task = pool->queue;
+  pool_task_t *tasktoDel;
+  while(task != NULL)
+  {
+    //Save the location of the task
+    tasktoDel = task;
+    //Get the location of the next task
+    task = task->next;
+    //Free the task object's memory
+    free(task);
+  }
+
+  // For each thread...
+  int i;
+  for (i=0; i < pool->thread_count; i++)
+  {
+    // Cancel the thread
+    err = pthread_cancel(pool->threads[i]);
+    // Return with the error number if there is an error
+    if (err != 0)
+      return err;
+  }
+
+  //Release the lock
+  pthread_mutex_unlock(&(pool->lock));
+
+  //Destroy the lock and conition variable
+  pthread_mutex_destroy(&(pool->lock));
+  pthread_cond_destroy(&(pool->notify));
+
+  // Return 0 for no error
+  return err;
 }
 
 
