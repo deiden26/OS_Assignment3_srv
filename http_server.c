@@ -27,6 +27,7 @@ int main(int argc,char *argv[])
 {
     int flag, num_seats = 20;
     int connfd = 0;
+    int* connfd_ptr;
     struct sockaddr_in serv_addr;
 
     char send_buffer[BUFSIZE];
@@ -87,12 +88,18 @@ int main(int argc,char *argv[])
     while(1)
     {
         connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
+        if (connfd !=0)
+        {
+            connfd_ptr = malloc(sizeof(int));
+            *connfd_ptr = connfd;
+            connfd = 0;
+        }
         
         // single threaded
         //handle_connection(&connfd);
 
         //Multi threaded
-        pool_add_task(threadpool, (void *) &handle_connection, (int *) &connfd);
+        pool_add_task(threadpool, (void *) &handle_connection, connfd_ptr);
 
     }
 }

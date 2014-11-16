@@ -84,7 +84,7 @@ pool_t *pool_create(int queue_size, int num_threads)
  * Add a task to the threadpool
  *
  */
-int pool_add_task(pool_t *pool, void (*function)(int *), void *argument)
+int pool_add_task(pool_t *pool, void (*function)(int *), int *argument)
 {
     //Initialize err to no error
     int err = 0;
@@ -210,6 +210,7 @@ static void *thread_do_work(void *pool)
     task->function((int*)task->argument);
 
     //Free the task
+    free(task->argument);
     free(task);
   }
 

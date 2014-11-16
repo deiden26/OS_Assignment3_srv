@@ -90,7 +90,7 @@ void confirm_seat(char* buf, int bufsize, int seat_id, int customer_id, int cust
             }
             else if(curr->customer_id != customer_id )
             {
-                snprintf(buf, bufsize, "Permission denied - seat held by another user: %d. You are user %d  \n\n",curr->customer_id, customer_id );
+                snprintf(buf, bufsize, "Permission denied - seat held by another user\n\n");
             }
             else if(curr->state != PENDING)
             {
