@@ -5,11 +5,15 @@
 #include "seats.h"
 
 seat_t* seat_header = NULL;
+pthread_mutex_t seatLock;
 
 char seat_state_to_char(seat_state_t);
 
 void list_seats(char* buf, int bufsize)
 {
+    //Get the lock
+    pthread_mutex_lock(&seatLock);
+
     seat_t* curr = seat_header;
     int index = 0;
     while(curr != NULL && index < bufsize+ strlen("%d %c,"))
@@ -20,6 +24,10 @@ void list_seats(char* buf, int bufsize)
             index = index + length;
         curr = curr->next;
     }
+
+    //Release the lock
+    pthread_mutex_unlock(&seatLock);
+
     if (index > 0)
         snprintf(buf+index-1, bufsize-index-1, "\n");
     else
@@ -28,6 +36,9 @@ void list_seats(char* buf, int bufsize)
 
 void view_seat(char* buf, int bufsize,  int seat_id, int customer_id, int customer_priority)
 {
+    //Get the lock
+    pthread_mutex_lock(&seatLock);
+
     seat_t* curr = seat_header;
     while(curr != NULL)
     {
@@ -49,12 +60,19 @@ void view_seat(char* buf, int bufsize,  int seat_id, int customer_id, int custom
         }
         curr = curr->next;
     }
+
+    //Release the lock
+    pthread_mutex_unlock(&seatLock);
+
     snprintf(buf, bufsize, "Requested seat not found\n\n");
     return;
 }
 
 void confirm_seat(char* buf, int bufsize, int seat_id, int customer_id, int customer_priority)
 {
+    //Get the lock
+    pthread_mutex_lock(&seatLock);
+
     seat_t* curr = seat_header;
     while(curr != NULL)
     {
@@ -79,6 +97,10 @@ void confirm_seat(char* buf, int bufsize, int seat_id, int customer_id, int cust
         }
         curr = curr->next;
     }
+
+    //Release the lock
+    pthread_mutex_unlock(&seatLock);
+
     snprintf(buf, bufsize, "Requested seat not found\n\n");
     
     return;
@@ -87,6 +109,9 @@ void confirm_seat(char* buf, int bufsize, int seat_id, int customer_id, int cust
 void cancel(char* buf, int bufsize, int seat_id, int customer_id, int customer_priority)
 {
     printf("Cancelling seat %d for user %d\n", seat_id, customer_id);
+
+    //Get the lock
+    pthread_mutex_lock(&seatLock);
 
     seat_t* curr = seat_header;
     while(curr != NULL)
@@ -112,6 +137,10 @@ void cancel(char* buf, int bufsize, int seat_id, int customer_id, int customer_p
         }
         curr = curr->next;
     }
+
+    //Release the lock
+    pthread_mutex_unlock(&seatLock);
+
     snprintf(buf, bufsize, "Seat not found\n\n");
     
     return;
@@ -119,6 +148,13 @@ void cancel(char* buf, int bufsize, int seat_id, int customer_id, int customer_p
 
 void load_seats(int number_of_seats)
 {
+    //Initialize lock
+    pthread_mutex_init(&seatLock);
+
+    //Get the lock
+    pthread_mutex_lock(&seatLock);
+
+    //Create Seats
     seat_t* curr = NULL;
     int i;
     for(i = 0; i < number_of_seats; i++)
@@ -139,10 +175,16 @@ void load_seats(int number_of_seats)
         }
         curr = temp;
     }
+
+    //Release the lcok
+    pthread_mutex_unlock (&seatLock);
 }
 
 void unload_seats()
 {
+    //Get the lock
+    pthread_mutex_lock(&seatLock);
+
     seat_t* curr = seat_header;
     while(curr != NULL)
     {
@@ -150,6 +192,9 @@ void unload_seats()
         curr = curr->next;
         free(temp);
     }
+
+    //Release the lock
+    pthread_mutex_unlock(&seatLock);
 }
 
 char seat_state_to_char(seat_state_t state)
