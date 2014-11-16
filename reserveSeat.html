@@ -26,8 +26,13 @@
           alert("No seat number specified");
           return;
         }
+        var userid = getParameterByName("user");
+        if (userid == null || userid == "") {
+          alert("No user id specified");
+          return;
+        }
 
-        var l = "confirm?userseat=" + seatNum;
+        var l = "confirm?user=" + userid + "seat=" + seatNum;
         $.ajax({
           dataType: "text",
           url: l,

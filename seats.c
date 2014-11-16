@@ -57,6 +57,9 @@ void view_seat(char* buf, int bufsize,  int seat_id, int customer_id, int custom
                 snprintf(buf, bufsize, "Seat unavailable\n\n");
             }
 
+            //Release the lock
+            pthread_mutex_unlock(&seatLock);
+
             return;
         }
         curr = curr->next;
@@ -87,12 +90,15 @@ void confirm_seat(char* buf, int bufsize, int seat_id, int customer_id, int cust
             }
             else if(curr->customer_id != customer_id )
             {
-                snprintf(buf, bufsize, "Permission denied - seat held by another user\n\n");
+                snprintf(buf, bufsize, "Permission denied - seat held by another user: %d. You are user %d  \n\n",curr->customer_id, customer_id );
             }
             else if(curr->state != PENDING)
             {
                 snprintf(buf, bufsize, "No pending request\n\n");
             }
+
+            //Release the lock
+            pthread_mutex_unlock(&seatLock);
 
             return;
         }
@@ -133,6 +139,9 @@ void cancel(char* buf, int bufsize, int seat_id, int customer_id, int customer_p
             {
                 snprintf(buf, bufsize, "No pending request\n\n");
             }
+
+            //Release the lock
+            pthread_mutex_unlock(&seatLock);
 
             return;
         }

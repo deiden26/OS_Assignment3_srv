@@ -89,10 +89,10 @@ int main(int argc,char *argv[])
         connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
         
         // single threaded
-        //handle_connection(&connfd);
+        handle_connection(&connfd);
 
         //Multi threaded
-        pool_add_task(threadpool, (void *) &handle_connection, (int *) &connfd);
+        //pool_add_task(threadpool, (void *) &handle_connection, (int *) &connfd);
 
     }
 }
