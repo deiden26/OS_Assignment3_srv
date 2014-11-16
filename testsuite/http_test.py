@@ -115,7 +115,7 @@ def http_request(host, port, obj, sleeptime=0.0, method='GET', **kwargs):
         
     except Exception as e:
         #HTTP Connection error
-        #print 'HTTP Connection Error', e
+        print 'HTTP Connection Error', e
         conn.close()
         failures.put(start)
         return False
