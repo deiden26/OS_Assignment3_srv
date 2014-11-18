@@ -3,17 +3,12 @@
 #include <unistd.h>
 
 
-typedef struct m_sem_t {
-    int value;
-    pthread_mutex_t lock;
-    pthread_cond_t cond;
-} m_sem_t;
+#include "semaphore.h"
 
-
-m_sem_t* sem_init(){
+m_sem_t* sem_init(value){
 
 	m_sem_t *sem = malloc(sizeof(m_sem_t));
-	sem->value=0;
+	sem->value=value;
 	pthread_mutex_init(&(sem->lock), NULL);
 	pthread_cond_init(&(sem->cond), NULL);
 	return sem;
@@ -31,7 +26,7 @@ int sem_wait(m_sem_t *s){
 
 	pthread_mutex_lock(&(s->lock));
 
-	while(s->value == 0){
+	while(s->value <= 0){
 		pthread_cond_wait(&(s->cond), &(s->lock)); 
 	}
 

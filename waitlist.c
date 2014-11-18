@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include "waitlist.h"
+#include "semaphore.h"
 
 pthread_mutex_t waitlist_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -16,9 +17,15 @@ pthread_mutex_t waitlist_lock = PTHREAD_MUTEX_INITIALIZER;
 
 Hold *waitlist_head = NULL;
 
+m_sem_t *sem = NULL;
+
+
 int add_to_waitlist(int user, int seat){
 
-	pthread_mutex_lock(&waitlist_lock);//course grained lock
+	if(sem==NULL)
+		sem = sem_init(1);
+
+	sem_wait(sem);
 
 	Hold *new = malloc(sizeof(Hold));
 	new->user = user;
@@ -31,7 +38,7 @@ int add_to_waitlist(int user, int seat){
 	if(waitlist_head == NULL){
 
 		waitlist_head = new;
-		pthread_mutex_unlock(&waitlist_lock);
+		sem_post(sem);
 		return counter;
 	}else{
 
@@ -46,7 +53,7 @@ int add_to_waitlist(int user, int seat){
 
 		curr->next = new;
 
-		pthread_mutex_unlock(&waitlist_lock);
+		sem_post(sem);
 
 		return counter;
 	}
@@ -55,10 +62,10 @@ int add_to_waitlist(int user, int seat){
 
 int remove_from_waitlist(int seat){
 
-	pthread_mutex_lock(&waitlist_lock);
+	sem_wait(sem);
 
 	if(waitlist_head == NULL){
-		pthread_mutex_unlock(&waitlist_lock);
+		sem_post(sem);
 		return -1;
 	}
 
@@ -70,7 +77,7 @@ int remove_from_waitlist(int seat){
 		curr = curr->next;
 
 		if(curr == NULL){
-			pthread_mutex_unlock(&waitlist_lock);
+			sem_post(sem);
 			return -1;
 		}
 	}
@@ -82,7 +89,7 @@ int remove_from_waitlist(int seat){
 	else
 		prev->next = curr->next;
 
-	pthread_mutex_unlock(&waitlist_lock);
+	sem_post(sem);
 
 	free(curr);
 
