@@ -152,7 +152,6 @@ void cancel(char* buf, int bufsize, int seat_id, int customer_id, int customer_p
                 snprintf(buf, bufsize, "No pending request\n\n");
             }
 
-            //handle waitlist
             handle_waitlist();
 
             //Release the lock
