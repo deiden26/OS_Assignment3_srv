@@ -34,7 +34,7 @@ CFLAGS = -g -Wall -O2 -D HAVE_CONFIG_H
 
 DELIVERY = Makefile *.h *.c aquajet_full.png selectSeats.html reserveSeat.html
 PROGS = http_server
-SRCS = http_server.c thread_pool.c util.c seats.c semaphore.c
+SRCS = http_server.c thread_pool.c util.c seats.c semaphore.c waitlist.c
 OBJS = ${SRCS:.c=.o}
 
 all: ${PROGS}

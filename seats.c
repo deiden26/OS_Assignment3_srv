@@ -4,9 +4,10 @@
 #include <pthread.h>
 
 #include "seats.h"
+#include "waitlist.h"
 
 seat_t* seat_header = NULL;
-pthread_mutex_t seatLock;
+pthread_mutex_t seatLock = PTHREAD_MUTEX_INITIALIZER;
 
 char seat_state_to_char(seat_state_t);
 
@@ -20,7 +21,7 @@ void list_seats(char* buf, int bufsize)
     while(curr != NULL && index < bufsize+ strlen("%d %c,"))
     {
         int length = snprintf(buf+index, bufsize-index, 
-                "%d %c,", curr->id, seat_state_to_char(curr->state));
+            "%d %c,", curr->id, seat_state_to_char(curr->state));
         if (length > 0)
             index = index + length;
         curr = curr->next;
@@ -48,9 +49,13 @@ void view_seat(char* buf, int bufsize,  int seat_id, int customer_id, int custom
             if(curr->state == AVAILABLE || (curr->state == PENDING && curr->customer_id == customer_id))
             {
                 snprintf(buf, bufsize, "Confirm seat: %d %c ?\n\n",
-                        curr->id, seat_state_to_char(curr->state));
+                    curr->id, seat_state_to_char(curr->state));
                 curr->state = PENDING;
                 curr->customer_id = customer_id;
+            }
+            else if(curr->state == PENDING && curr->customer_id != customer_id)
+            {
+                snprintf(buf, bufsize, "Seat unavailable. press okay to standby list\n\n");
             }
             else
             {
@@ -85,8 +90,13 @@ void confirm_seat(char* buf, int bufsize, int seat_id, int customer_id, int cust
             if(curr->state == PENDING && curr->customer_id == customer_id )
             {
                 snprintf(buf, bufsize, "Seat confirmed: %d %c\n\n",
-                        curr->id, seat_state_to_char(curr->state));
+                    curr->id, seat_state_to_char(curr->state));
                 curr->state = OCCUPIED;
+            }
+            else if(curr->customer_id != customer_id && curr->state == PENDING)
+            {
+                int pos = add_to_waitlist(customer_id, seat_id);
+                snprintf(buf, bufsize, "Added to the waitlit at position %d\n\n", pos);
             }
             else if(curr->customer_id != customer_id )
             {
@@ -96,6 +106,8 @@ void confirm_seat(char* buf, int bufsize, int seat_id, int customer_id, int cust
             {
                 snprintf(buf, bufsize, "No pending request\n\n");
             }
+
+            handle_waitlist();
 
             //Release the lock
             pthread_mutex_unlock(&seatLock);
@@ -128,20 +140,25 @@ void cancel(char* buf, int bufsize, int seat_id, int customer_id, int customer_p
             if(curr->state == PENDING && curr->customer_id == customer_id )
             {
                 snprintf(buf, bufsize, "Seat request cancelled: %d %c\n\n",
-                        curr->id, seat_state_to_char(curr->state));
+                    curr->id, seat_state_to_char(curr->state));
                 curr->state = AVAILABLE;
-            }
+            }/*
             else if(curr->customer_id != customer_id )
             {
                 snprintf(buf, bufsize, "Permission denied - seat held by another user\n\n");
-            }
+            }*/
             else if(curr->state != PENDING)
             {
                 snprintf(buf, bufsize, "No pending request\n\n");
             }
 
+            //handle waitlist
+            handle_waitlist();
+
             //Release the lock
             pthread_mutex_unlock(&seatLock);
+
+            
 
             return;
         }
@@ -215,12 +232,38 @@ char seat_state_to_char(seat_state_t state)
     switch(state)
     {
         case AVAILABLE:
-            return 'A';
+        return 'A';
         case PENDING:
-            return 'P';
+        return 'P';
         case OCCUPIED:
-            return 'O';
+        return 'O';
     }
 
     return '?';
+}
+
+void handle_waitlist(){
+
+
+
+        seat_t* curr = seat_header;
+        while(curr != NULL)
+        {
+            if(curr->state == AVAILABLE)
+            {
+                int user = remove_from_waitlist(curr->id);
+
+                if(user != -1){
+                    curr->customer_id = user;
+                    curr->state = OCCUPIED;
+                }
+            }else if(curr->state == OCCUPIED){
+
+                while(remove_from_waitlist(curr->id) != -1);
+            }
+            curr = curr->next;
+        }
+    
+
+
 }
