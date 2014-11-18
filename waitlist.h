@@ -6,6 +6,7 @@
 
 int add_to_waitlist(int user, int seat);
 int remove_from_waitlist(int seat);
+void init_waitlist();
 
 
 typedef struct Hold

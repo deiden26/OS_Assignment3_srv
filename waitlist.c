@@ -11,19 +11,19 @@
 #include "waitlist.h"
 #include "semaphore.h"
 
-pthread_mutex_t waitlist_lock = PTHREAD_MUTEX_INITIALIZER;
-
-
 
 Hold *waitlist_head = NULL;
 
 m_sem_t *sem = NULL;
 
-
-int add_to_waitlist(int user, int seat){
-
+void init_waitlist()
+{
 	if(sem==NULL)
 		sem = sem_init(1);
+}
+
+
+int add_to_waitlist(int user, int seat){
 
 	sem_wait(sem);
 

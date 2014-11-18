@@ -55,7 +55,7 @@ void view_seat(char* buf, int bufsize,  int seat_id, int customer_id, int custom
             }
             else if(curr->state == PENDING && curr->customer_id != customer_id)
             {
-                snprintf(buf, bufsize, "Seat unavailable. Press okay to get on  standby list\n\n");
+                snprintf(buf, bufsize, "Seat unavailable. Press okay to get on the standby list\n\n");
             }
             else
             {
@@ -179,6 +179,9 @@ void load_seats(int number_of_seats)
 
     //Get the lock
     pthread_mutex_lock(&seatLock);
+
+    //Initialize the waitlist
+    init_waitlist();
 
     //Create Seats
     seat_t* curr = NULL;
