@@ -256,7 +256,7 @@ void handle_waitlist(){
                     curr->customer_id = user;
                     curr->state = OCCUPIED;
                 }
-            }else if(curr->state == OCCUPIED){
+            }if(curr->state == OCCUPIED){
 
                 while(remove_from_waitlist(curr->id) != -1);
             }
