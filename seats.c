@@ -55,7 +55,7 @@ void view_seat(char* buf, int bufsize,  int seat_id, int customer_id, int custom
             }
             else if(curr->state == PENDING && curr->customer_id != customer_id)
             {
-                snprintf(buf, bufsize, "Seat unavailable. press okay to standby list\n\n");
+                snprintf(buf, bufsize, "Seat unavailable. Press okay to get on  standby list\n\n");
             }
             else
             {
@@ -142,11 +142,11 @@ void cancel(char* buf, int bufsize, int seat_id, int customer_id, int customer_p
                 snprintf(buf, bufsize, "Seat request cancelled: %d %c\n\n",
                     curr->id, seat_state_to_char(curr->state));
                 curr->state = AVAILABLE;
-            }/*
+            }
             else if(curr->customer_id != customer_id )
             {
                 snprintf(buf, bufsize, "Permission denied - seat held by another user\n\n");
-            }*/
+            }
             else if(curr->state != PENDING)
             {
                 snprintf(buf, bufsize, "No pending request\n\n");
