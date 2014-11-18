@@ -55,7 +55,7 @@ void view_seat(char* buf, int bufsize,  int seat_id, int customer_id, int custom
             }
             else if(curr->state == PENDING && curr->customer_id != customer_id)
             {
-                snprintf(buf, bufsize, "Seat unavailable. Press okay to get on the standby list\n\n");
+                snprintf(buf, bufsize, "Seat unavailable\n\n");
             }
             else
             {
@@ -92,11 +92,6 @@ void confirm_seat(char* buf, int bufsize, int seat_id, int customer_id, int cust
                 snprintf(buf, bufsize, "Seat confirmed: %d %c\n\n",
                     curr->id, seat_state_to_char(curr->state));
                 curr->state = OCCUPIED;
-            }
-            else if(curr->customer_id != customer_id && curr->state == PENDING)
-            {
-                int pos = add_to_waitlist(customer_id, seat_id);
-                snprintf(buf, bufsize, "Added to the waitlit at position %d\n\n", pos);
             }
             else if(curr->customer_id != customer_id )
             {
